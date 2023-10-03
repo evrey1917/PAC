@@ -6,14 +6,12 @@ frame2 = pd.read_csv('titanic_with_labels.csv', index_col=0)
 
 frame = pd.merge(frame1, frame2, on = 'check_number')
 
-frame = frame[frame['sex'].isin(['м','М','ж','Ж'])]
-frame.loc[frame['sex'].isin(['ж','Ж']), 'sex'] = 0
-frame.loc[frame['sex'].isin(['m','M','м','М']), 'sex'] = 1
+frame['sex'] = frame['sex'].map({'m':1,'M':1,'м':1,'М':1,'ж':0,'Ж':0})
+frame = frame[frame['sex'].notna()]
 
 frame['row_number'] = frame['row_number'].fillna(frame['row_number'].max())
 
-frame.loc[frame['liters_drunk'] < 0, 'liters_drunk'] = None
-frame.loc[frame['liters_drunk'] >= 7, 'liters_drunk'] = None
+frame['liters_drunk'] = frame['liters_drunk'].map(lambda x: None if x < 0 or x >= 7 else x)
 frame['liters_drunk'] = frame['liters_drunk'].fillna(frame['liters_drunk'].mean(skipna = True))
 
 print(frame)
