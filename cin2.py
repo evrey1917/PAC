@@ -5,9 +5,6 @@ import datetime as dt
 frame1 = pd.read_csv('cinema_sessions.csv', index_col=0)
 frame2 = pd.read_csv('titanic_with_labels.csv', index_col=0)
 
-data = dt.datetime.now()
-print((data - dt.datetime.combine(dt.date.today(), dt.time.min)).seconds // 3600)
-
 frame = pd.merge(frame1, frame2, on = 'check_number')
 frame["session_start"] = frame["session_start"].astype("datetime64[ns]")
 
@@ -19,16 +16,11 @@ frame['row_number'] = frame['row_number'].fillna(frame['row_number'].max(skipna 
 frame['liters_drunk'] = frame['liters_drunk'].map(lambda x: None if x < 0 or x >= 7 else x)
 frame['liters_drunk'] = frame['liters_drunk'].fillna(frame['liters_drunk'].mean(skipna = True))
 
-frame['age_child'] = frame['age'].map(lambda x: x if x < 18 else None)
-frame['age_adult'] = frame['age'].map(lambda x: x if x >= 18 and x <= 50 else None)
-frame['age_old'] = frame['age'].map(lambda x: x if x > 50 else None)
+frame[['age_child', 'age_adult', 'age_old']] = frame['age'].map(lambda x: str(x) + ' _ - _ -' if (x < 18) else '- _ ' + str(x) + ' _ -' if (x >= 18 and x <= 50) else '- _ - _ ' + str(x)).str.split('_', expand = True)
 frame = frame.drop('age', axis = 1)
 
 frame['drink'] = frame['drink'].map(lambda x: 1 if 'beer' in x else 0)
 
-frame['morning'] = frame['session_start'].map(lambda x: x if (6 <= (x - dt.datetime.combine(dt.date.today(), dt.time.min)).seconds // 3600 < 12)else None)
-frame['day'] = frame['session_start'].map(lambda x: x if (12 <= (x - dt.datetime.combine(dt.date.today(), dt.time.min)).seconds // 3600 < 18) else None)
-frame['evening'] = frame['session_start'].map(lambda x: x if (18 <= (x - dt.datetime.combine(dt.date.today(), dt.time.min)).seconds // 3600 <= 24) else None)
+frame[['morning', 'day', 'evening']] = frame['session_start'].map(lambda x: str(x.time()) + ' _ - _ -' if (6 <= (x - dt.datetime.combine(dt.date.today(), dt.time.min)).seconds // 3600 < 12) else '- _ ' + str(x.time()) + ' _ -' if (12 <= (x - dt.datetime.combine(dt.date.today(), dt.time.min)).seconds // 3600 < 18) else '- _ - _ ' + str(x.time())).str.split('_', expand = True)
 frame = frame.drop('session_start', axis = 1)
-
 print(frame)
